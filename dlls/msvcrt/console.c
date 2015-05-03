@@ -176,6 +176,11 @@ int CDECL _getch(void)
       else
         break;
     } while(1);
+    if (PeekConsoleInputA(MSVCRT_console_in, &ir, 1, &count) && count &&
+        ir.EventType == KEY_EVENT && !ir.Event.KeyEvent.bKeyDown &&
+        ir.Event.KeyEvent.uChar.AsciiChar == retval && retval) {
+      ReadConsoleInputA(MSVCRT_console_in, &ir, 1, &count);
+    }
     if (mode)
       SetConsoleMode(MSVCRT_console_in, mode);
   }
