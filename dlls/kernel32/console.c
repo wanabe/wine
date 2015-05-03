@@ -1035,53 +1035,6 @@ BOOL WINAPI PeekConsoleInputA( HANDLE handle, PINPUT_RECORD buffer, DWORD count,
 }
 
 
-/***********************************************************************
- *            PeekConsoleInputW   (KERNEL32.@)
- */
-BOOL WINAPI PeekConsoleInputW( HANDLE handle, PINPUT_RECORD buffer, DWORD count, LPDWORD read )
-{
-    BOOL ret;
-    SERVER_START_REQ( read_console_input )
-    {
-        req->handle = console_handle_unmap(handle);
-        req->flush  = FALSE;
-        wine_server_set_reply( req, buffer, count * sizeof(INPUT_RECORD) );
-        if ((ret = !wine_server_call_err( req )))
-        {
-            if (read) *read = count ? reply->read : 0;
-        }
-    }
-    SERVER_END_REQ;
-    return ret;
-}
-
-
-/***********************************************************************
- *            GetNumberOfConsoleInputEvents   (KERNEL32.@)
- */
-BOOL WINAPI GetNumberOfConsoleInputEvents( HANDLE handle, LPDWORD nrofevents )
-{
-    BOOL ret;
-    SERVER_START_REQ( read_console_input )
-    {
-        req->handle = console_handle_unmap(handle);
-        req->flush  = FALSE;
-        if ((ret = !wine_server_call_err( req )))
-        {
-            if (nrofevents)
-                *nrofevents = reply->read;
-            else
-            {
-                SetLastError(ERROR_INVALID_ACCESS);
-                ret = FALSE;
-            }
-        }
-    }
-    SERVER_END_REQ;
-    return ret;
-}
-
-
 /******************************************************************************
  * read_console_input
  *
@@ -1225,6 +1178,55 @@ static enum read_console_input_return read_console_input(HANDLE handle, PINPUT_R
     }
     SERVER_END_REQ;
 
+    return ret;
+}
+
+
+/***********************************************************************
+ *            PeekConsoleInputW   (KERNEL32.@)
+ */
+BOOL WINAPI PeekConsoleInputW( HANDLE handle, PINPUT_RECORD buffer, DWORD count, LPDWORD read )
+{
+    BOOL ret;
+    wait_console_input(handle, 0);
+    SERVER_START_REQ( read_console_input )
+    {
+        req->handle = console_handle_unmap(handle);
+        req->flush  = FALSE;
+        wine_server_set_reply( req, buffer, count * sizeof(INPUT_RECORD) );
+        if ((ret = !wine_server_call_err( req )))
+        {
+            if (read) *read = count ? reply->read : 0;
+        }
+    }
+    SERVER_END_REQ;
+    return ret;
+}
+
+
+/***********************************************************************
+ *            GetNumberOfConsoleInputEvents   (KERNEL32.@)
+ */
+BOOL WINAPI GetNumberOfConsoleInputEvents( HANDLE handle, LPDWORD nrofevents )
+{
+    BOOL ret;
+    wait_console_input(handle, 0);
+    SERVER_START_REQ( read_console_input )
+    {
+        req->handle = console_handle_unmap(handle);
+        req->flush  = FALSE;
+        if ((ret = !wine_server_call_err( req )))
+        {
+            if (nrofevents)
+                *nrofevents = reply->read;
+            else
+            {
+                SetLastError(ERROR_INVALID_ACCESS);
+                ret = FALSE;
+            }
+        }
+    }
+    SERVER_END_REQ;
     return ret;
 }
 
