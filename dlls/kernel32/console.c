@@ -1184,10 +1184,10 @@ static enum read_console_input_return bare_console_fetch_input(HANDLE handle, in
     return ret;
 }
 
-static enum read_console_input_return read_console_input(HANDLE handle, PINPUT_RECORD ir, DWORD timeout)
+static enum read_console_input_return wait_console_input(HANDLE handle, DWORD timeout)
 {
     int fd;
-    enum read_console_input_return      ret;
+    enum read_console_input_return ret = rci_gotone;
 
     if ((fd = get_console_bare_fd(handle)) != -1)
     {
@@ -1196,9 +1196,7 @@ static enum read_console_input_return read_console_input(HANDLE handle, PINPUT_R
         {
             ret = bare_console_fetch_input(handle, fd, timeout);
         }
-        else ret = rci_gotone;
         close(fd);
-        if (ret != rci_gotone) return ret;
     }
     else
     {
@@ -1208,6 +1206,15 @@ static enum read_console_input_return read_console_input(HANDLE handle, PINPUT_R
             return rci_timeout;
     }
 
+    return ret;
+}
+
+static enum read_console_input_return read_console_input(HANDLE handle, PINPUT_RECORD ir, DWORD timeout)
+{
+    enum read_console_input_return      ret;
+
+    ret = wait_console_input(handle, timeout);
+    if (ret != rci_gotone) return ret;
     SERVER_START_REQ( read_console_input )
     {
         req->handle = console_handle_unmap(handle);
