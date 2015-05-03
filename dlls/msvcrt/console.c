@@ -285,19 +285,20 @@ int CDECL _kbhit(void)
 
     GetNumberOfConsoleInputEvents(MSVCRT_console_in, &count);
 
-    if (count && (ir = MSVCRT_malloc(count * sizeof(INPUT_RECORD))) &&
-        PeekConsoleInputA(MSVCRT_console_in, ir, count, &count))
-      for(i = 0; i < count; i++)
-      {
-        if (ir[i].EventType == KEY_EVENT &&
-            ir[i].Event.KeyEvent.bKeyDown &&
-            ir[i].Event.KeyEvent.uChar.AsciiChar)
+    if (count && (ir = MSVCRT_malloc(count * sizeof(INPUT_RECORD))) ) {
+      if (PeekConsoleInputA(MSVCRT_console_in, ir, count, &count))
+        for(i = 0; i < count; i++)
         {
-          retval = 1;
-          break;
+          if (ir[i].EventType == KEY_EVENT &&
+              ir[i].Event.KeyEvent.bKeyDown &&
+              ir[i].Event.KeyEvent.uChar.AsciiChar)
+          {
+            retval = 1;
+            break;
+          }
         }
-      }
-    MSVCRT_free(ir);
+      MSVCRT_free(ir);
+    }
   }
   UNLOCK_CONSOLE;
   return retval;
