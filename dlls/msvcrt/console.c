@@ -287,7 +287,7 @@ int CDECL _kbhit(void)
 
     if (count && (ir = MSVCRT_malloc(count * sizeof(INPUT_RECORD))) &&
         PeekConsoleInputA(MSVCRT_console_in, ir, count, &count))
-      for(i = 0; i < count - 1; i++)
+      for(i = 0; i < count; i++)
       {
         if (ir[i].EventType == KEY_EVENT &&
             ir[i].Event.KeyEvent.bKeyDown &&
