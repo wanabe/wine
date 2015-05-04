@@ -180,6 +180,11 @@ int CDECL _getch(void)
         ir.EventType == KEY_EVENT && !ir.Event.KeyEvent.bKeyDown) {
       ReadConsoleInputA(MSVCRT_console_in, &ir, 1, &count);
     }
+    while (PeekConsoleInputA(MSVCRT_console_in, &ir, 1, &count) && count &&
+        ir.EventType == KEY_EVENT && !ir.Event.KeyEvent.bKeyDown &&
+        ir.Event.KeyEvent.wVirtualKeyCode ^ 0x10 < 3) {
+      ReadConsoleInputA(MSVCRT_console_in, &ir, 1, &count);
+    }
     if (mode)
       SetConsoleMode(MSVCRT_console_in, mode);
   }
