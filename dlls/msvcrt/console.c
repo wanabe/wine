@@ -177,8 +177,7 @@ int CDECL _getch(void)
         break;
     } while(1);
     if (PeekConsoleInputA(MSVCRT_console_in, &ir, 1, &count) && count &&
-        ir.EventType == KEY_EVENT && !ir.Event.KeyEvent.bKeyDown &&
-        ir.Event.KeyEvent.uChar.AsciiChar == retval && retval) {
+        ir.EventType == KEY_EVENT && !ir.Event.KeyEvent.bKeyDown) {
       ReadConsoleInputA(MSVCRT_console_in, &ir, 1, &count);
     }
     if (mode)
@@ -290,8 +289,7 @@ int CDECL _kbhit(void)
         for(i = 0; i < count; i++)
         {
           if (ir[i].EventType == KEY_EVENT &&
-              ir[i].Event.KeyEvent.bKeyDown &&
-              ir[i].Event.KeyEvent.uChar.AsciiChar)
+              ir[i].Event.KeyEvent.bKeyDown)
           {
             retval = 1;
             break;
